@@ -1,0 +1,12 @@
+{
+  "name": "iztro-liu-yun-cli",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node liu-yun.mjs"
+  },
+  "dependencies": {
+    "iztro": "^2.4.7"
+  }
+}

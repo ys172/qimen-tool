@@ -1,0 +1,1406 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>历法与奇门定局</title>
+    <script src="./vendor/lunar.js"></script>
+    <script src="./vendor/iztro.min.js"></script>
+    <style>
+      :root {
+        --bg: #f6f3ed;
+        --panel: #ffffff;
+        --ink: #25211d;
+        --muted: #716a61;
+        --line: #ddd4c8;
+        --brand: #8b2f2f;
+        --brand-dark: #672222;
+        --soft: #f2e7d8;
+        --accent: #225c5a;
+        --shadow: 0 18px 45px rgba(62, 42, 24, 0.12);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      .shell {
+        width: min(520px, calc(100% - 24px));
+        margin: 0 auto;
+        padding: 18px 0 28px;
+      }
+
+      header {
+        margin-bottom: 22px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(30px, 5vw, 46px);
+        letter-spacing: 0;
+      }
+
+      .subtitle {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.7;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 18px;
+      }
+
+      .view {
+        display: none;
+      }
+
+      .view.active {
+        display: block;
+      }
+
+      .home-actions {
+        display: grid;
+        gap: 14px;
+      }
+
+      .nav-card {
+        width: 100%;
+        min-height: 112px;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        box-shadow: var(--shadow);
+        color: var(--ink);
+        text-align: left;
+        padding: 20px;
+      }
+
+      .nav-card strong {
+        display: block;
+        font-size: 25px;
+        margin-bottom: 8px;
+      }
+
+      .nav-card span {
+        display: block;
+        color: var(--muted);
+        line-height: 1.6;
+        font-weight: 500;
+      }
+
+      .page-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .back-button {
+        flex: 0 0 auto;
+        background: var(--soft);
+        color: var(--ink);
+        padding: 9px 12px;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .panel-head {
+        padding: 18px 18px 0;
+      }
+
+      .panel h2 {
+        margin: 0 0 6px;
+        font-size: 22px;
+      }
+
+      .panel p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 14px;
+      }
+
+      .controls {
+        display: grid;
+        gap: 12px;
+        padding: 18px;
+      }
+
+      label {
+        display: grid;
+        gap: 7px;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      input {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: #fff;
+        color: var(--ink);
+        outline: none;
+        padding: 11px 12px;
+      }
+
+      input:focus {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(34, 92, 90, 0.12);
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+      }
+
+      button {
+        border: 0;
+        border-radius: 7px;
+        padding: 11px 14px;
+        cursor: pointer;
+        font-weight: 760;
+      }
+
+      .primary {
+        flex: 1;
+        background: var(--brand);
+        color: #fff;
+      }
+
+      .primary:hover {
+        background: var(--brand-dark);
+      }
+
+      .ghost {
+        background: var(--soft);
+        color: var(--ink);
+      }
+
+      .result {
+        border-top: 1px solid var(--line);
+        background: #fbfaf7;
+      }
+
+      .item {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 12px;
+        padding: 14px 18px;
+        border-top: 1px solid #ece5da;
+        line-height: 1.6;
+      }
+
+      .item:first-child {
+        border-top: 0;
+      }
+
+      .label {
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      .value {
+        font-size: 17px;
+        font-weight: 760;
+        word-break: break-word;
+      }
+
+      .qimen-main {
+        padding: 18px;
+        background: #fbfaf7;
+        border-top: 1px solid var(--line);
+      }
+
+      .qimen-main strong {
+        display: block;
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .qimen-main div {
+        color: var(--muted);
+        line-height: 1.75;
+      }
+
+      .qimen-board-wrap {
+        position: relative;
+        margin-top: 14px;
+        padding: 18px;
+      }
+
+      .qimen-board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0;
+        border: 2px solid #c65579;
+        background: #fff;
+      }
+
+      .qimen-palace {
+        position: relative;
+        min-height: 150px;
+        border: 1px solid #c65579;
+        padding: 8px;
+        overflow: hidden;
+        font-family: KaiTi, "KaiTi_GB2312", "STKaiti", "Kaiti SC", serif;
+      }
+
+      .dark-stem,
+      .god,
+      .star,
+      .door,
+      .stem-heaven,
+      .stem-earth,
+      .stem-heaven-state,
+      .stem-earth-state,
+      .star-state,
+      .door-state,
+      .earth-god {
+        position: absolute;
+        line-height: 1;
+      }
+
+      .dark-stem {
+        left: 10px;
+        top: 10px;
+        color: #444;
+        font-size: 16px;
+        font-weight: 800;
+      }
+
+      .god {
+        left: 50%;
+        top: 10px;
+        transform: translateX(-50%);
+        color: #a08120;
+        font-size: 31px;
+        font-weight: 900;
+        white-space: nowrap;
+      }
+
+      .star {
+        left: 10px;
+        top: 42%;
+        transform: translateY(-50%);
+        color: #111;
+        font-size: 24px;
+        font-weight: 850;
+        white-space: nowrap;
+      }
+
+      .star-state {
+        left: 12px;
+        top: 54%;
+        color: #777;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .tian-qin {
+        color: #d02727;
+      }
+
+      .door {
+        left: 10px;
+        bottom: 26px;
+        color: #7357d9;
+        font-size: 24px;
+        font-weight: 850;
+        white-space: nowrap;
+      }
+
+      .door-state {
+        left: 12px;
+        bottom: 13px;
+        color: #777;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .stem-heaven,
+      .stem-earth {
+        right: 12px;
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+        color: #111;
+        font-size: 24px;
+        font-weight: 850;
+      }
+
+      .stem-heaven {
+        top: 42%;
+        transform: translateY(-50%);
+      }
+
+      .stem-earth {
+        bottom: 24px;
+      }
+
+      .stem-heaven-state,
+      .stem-earth-state {
+        right: 14px;
+        color: #777;
+        font-size: 14px;
+        font-weight: 800;
+        writing-mode: vertical-rl;
+        text-orientation: upright;
+      }
+
+      .stem-heaven-state {
+        top: 54%;
+      }
+
+      .stem-earth-state {
+        bottom: 10px;
+      }
+
+      .stem-horizontal {
+        writing-mode: horizontal-tb;
+        text-orientation: mixed;
+        right: 10px;
+        letter-spacing: 0;
+        white-space: nowrap;
+      }
+
+      .stem-heaven.stem-horizontal {
+        transform: translateY(-50%);
+      }
+
+      .stem-horizontal + .stem-heaven-state,
+      .stem-horizontal + .stem-earth-state {
+        writing-mode: horizontal-tb;
+        text-orientation: mixed;
+        right: 10px;
+        white-space: nowrap;
+      }
+
+      .earth-god {
+        left: 50%;
+        bottom: 8px;
+        transform: translateX(-50%);
+        color: #9a2b2b;
+        font-size: 13px;
+        font-weight: 850;
+      }
+
+      .outer-marker {
+        position: absolute;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid #111;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+      }
+
+      .outer-marker.horse {
+        width: auto;
+        height: auto;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        color: #000;
+        font-size: 34px;
+        line-height: 1;
+      }
+
+      .center-palace {
+        align-content: center;
+        text-align: center;
+        background: #fffdf8;
+        display: grid;
+      }
+
+      .center-palace strong {
+        font-size: 20px;
+        color: #153bd6;
+      }
+
+      .center-palace span {
+        display: block;
+        margin-top: 8px;
+        color: var(--ink);
+        font-weight: 700;
+      }
+
+      .error {
+        color: #9b1c1c;
+        padding: 18px;
+        line-height: 1.7;
+      }
+
+      @media (max-width: 760px) {
+        .item {
+          grid-template-columns: 1fr;
+          gap: 4px;
+        }
+
+        header {
+          margin-bottom: 16px;
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+
+        .subtitle {
+          font-size: 14px;
+        }
+
+        .qimen-main {
+          padding: 10px;
+        }
+
+        .qimen-board-wrap {
+          padding: 12px;
+        }
+
+        .qimen-palace {
+          min-height: 118px;
+        }
+
+        .star {
+          font-size: 20px;
+        }
+
+        .door {
+          font-size: 20px;
+        }
+
+        .god {
+          font-size: 25px;
+        }
+
+        .stem-heaven,
+        .stem-earth {
+          font-size: 20px;
+        }
+
+        .star-state,
+        .door-state,
+        .stem-heaven-state,
+        .stem-earth-state {
+          font-size: 13px;
+        }
+
+        .dark-stem {
+          font-size: 14px;
+        }
+
+        .earth-god {
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section id="homeView" class="view active">
+        <header>
+          <h1>排盘工具</h1>
+          <p class="subtitle">请选择需要使用的功能。</p>
+        </header>
+        <div class="home-actions">
+          <button class="nav-card" id="openBazi" type="button">
+            <strong>八字排盘</strong>
+            <span>查询农历、八字四柱和紫微干支。</span>
+          </button>
+          <button class="nav-card" id="openQimen" type="button">
+            <strong>奇门排盘</strong>
+            <span>按指定时间计算阴阳遁、局数和九宫盘。</span>
+          </button>
+        </div>
+      </section>
+
+      <section id="baziView" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <div class="page-head">
+              <h2>八字排盘</h2>
+              <button class="back-button" type="button" data-back>返回</button>
+            </div>
+            <p>默认是此时此刻，也可以手动选择时间。</p>
+          </div>
+          <div class="controls">
+            <label>
+              时间
+              <input id="calendarDate" type="datetime-local" />
+            </label>
+            <div class="actions">
+              <button class="primary" id="queryCalendar" type="button">查询</button>
+              <button class="ghost" id="calendarNow" type="button">此时此刻</button>
+            </div>
+          </div>
+          <div id="calendarResult" class="result"></div>
+        </section>
+      </section>
+
+      <section id="qimenView" class="view">
+        <section class="panel">
+          <div class="panel-head">
+            <div class="page-head">
+              <h2>奇门排盘</h2>
+              <button class="back-button" type="button" data-back>返回</button>
+            </div>
+            <p>默认是此时此刻，也可以手动选择时间。</p>
+          </div>
+          <div class="controls">
+            <label>
+              时间
+              <input id="qimenDateTime" type="datetime-local" />
+            </label>
+            <div class="actions">
+              <button class="primary" id="calcQimen" type="button">计算定局</button>
+              <button class="ghost" id="qimenNow" type="button">此时此刻</button>
+            </div>
+          </div>
+          <div id="qimenResult" class="qimen-main"></div>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const qimenJuTable = {
+        冬至: { dun: "阳遁", ju: [1, 7, 4] },
+        小寒: { dun: "阳遁", ju: [2, 8, 5] },
+        大寒: { dun: "阳遁", ju: [3, 9, 6] },
+        立春: { dun: "阳遁", ju: [8, 5, 2] },
+        雨水: { dun: "阳遁", ju: [9, 6, 3] },
+        惊蛰: { dun: "阳遁", ju: [1, 7, 4] },
+        春分: { dun: "阳遁", ju: [3, 9, 6] },
+        清明: { dun: "阳遁", ju: [4, 1, 7] },
+        谷雨: { dun: "阳遁", ju: [5, 2, 8] },
+        立夏: { dun: "阳遁", ju: [4, 1, 7] },
+        小满: { dun: "阳遁", ju: [5, 2, 8] },
+        芒种: { dun: "阳遁", ju: [6, 3, 9] },
+        夏至: { dun: "阴遁", ju: [9, 3, 6] },
+        小暑: { dun: "阴遁", ju: [8, 2, 5] },
+        大暑: { dun: "阴遁", ju: [7, 1, 4] },
+        立秋: { dun: "阴遁", ju: [2, 5, 8] },
+        处暑: { dun: "阴遁", ju: [1, 4, 7] },
+        白露: { dun: "阴遁", ju: [9, 3, 6] },
+        秋分: { dun: "阴遁", ju: [7, 1, 4] },
+        寒露: { dun: "阴遁", ju: [6, 9, 3] },
+        霜降: { dun: "阴遁", ju: [5, 8, 2] },
+        立冬: { dun: "阴遁", ju: [6, 9, 3] },
+        小雪: { dun: "阴遁", ju: [5, 8, 2] },
+        大雪: { dun: "阴遁", ju: [4, 7, 1] },
+      };
+
+      const yuanNames = ["上元", "中元", "下元"];
+      const luoShuOrder = ["1", "8", "3", "4", "9", "2", "7", "6"];
+      const boardOrder = ["4", "9", "2", "3", "5", "7", "8", "1", "6"];
+      const sanQiLiuYi = ["戊", "己", "庚", "辛", "壬", "癸", "丁", "丙", "乙"];
+      const basicStars = {
+        1: "天蓬",
+        8: "天任",
+        3: "天冲",
+        4: "天辅",
+        9: "天英",
+        2: "天芮",
+        7: "天柱",
+        6: "天心",
+        5: "天禽",
+      };
+      const basicDoors = {
+        1: "休门",
+        8: "生门",
+        3: "伤门",
+        4: "杜门",
+        9: "景门",
+        2: "死门",
+        7: "惊门",
+        6: "开门",
+        5: "",
+      };
+      const palaceNames = {
+        1: "坎一宫",
+        2: "坤二宫",
+        3: "震三宫",
+        4: "巽四宫",
+        5: "中五宫",
+        6: "乾六宫",
+        7: "兑七宫",
+        8: "艮八宫",
+        9: "离九宫",
+      };
+      const branches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
+      const palaceMainBranch = {
+        1: "子",
+        2: "申",
+        3: "卯",
+        4: "巳",
+        6: "亥",
+        7: "酉",
+        8: "寅",
+        9: "午",
+      };
+      const palaceYinYangBranch = {
+        2: { yang: "申", yin: "未" },
+        4: { yang: "辰", yin: "巳" },
+        6: { yang: "戌", yin: "亥" },
+        8: { yang: "寅", yin: "丑" },
+      };
+      const branchElement = {
+        子: "水",
+        丑: "土",
+        寅: "木",
+        卯: "木",
+        辰: "土",
+        巳: "火",
+        午: "火",
+        未: "土",
+        申: "金",
+        酉: "金",
+        戌: "土",
+        亥: "水",
+      };
+      const palaceElement = {
+        1: "水",
+        2: "土",
+        3: "木",
+        4: "木",
+        6: "金",
+        7: "金",
+        8: "土",
+        9: "火",
+      };
+      const elementGenerates = { 木: "火", 火: "土", 土: "金", 金: "水", 水: "木" };
+      const elementControls = { 木: "土", 土: "水", 水: "火", 火: "金", 金: "木" };
+      const stemChangShengStart = {
+        甲: "亥",
+        乙: "午",
+        丙: "寅",
+        丁: "酉",
+        戊: "寅",
+        己: "酉",
+        庚: "巳",
+        辛: "子",
+        壬: "申",
+        癸: "卯",
+      };
+      const yangStems = new Set(["甲", "丙", "戊", "庚", "壬"]);
+      const changShengNames = ["长", "沐", "冠", "临", "旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
+      const doorElements = {
+        开门: "金",
+        休门: "水",
+        生门: "土",
+        伤门: "木",
+        杜门: "木",
+        景门: "火",
+        死门: "土",
+        惊门: "金",
+      };
+      const starElements = {
+        天蓬: "水",
+        天任: "土",
+        天冲: "木",
+        天辅: "木",
+        天英: "火",
+        天芮: "土",
+        天柱: "金",
+        天心: "金",
+      };
+      const branchToGong = {
+        子: "1",
+        丑: "8",
+        寅: "8",
+        卯: "3",
+        辰: "4",
+        巳: "4",
+        午: "9",
+        未: "2",
+        申: "2",
+        酉: "7",
+        戌: "6",
+        亥: "6",
+      };
+      const outerBranchPositions = {
+        子: { left: "50%", top: "calc(100% - 18px)" },
+        丑: { left: "16.666%", top: "calc(100% - 18px)" },
+        寅: { left: "18px", top: "83.333%" },
+        卯: { left: "18px", top: "50%" },
+        辰: { left: "16.666%", top: "18px" },
+        巳: { left: "18px", top: "16.666%" },
+        午: { left: "50%", top: "18px" },
+        未: { left: "83.333%", top: "18px" },
+        申: { left: "calc(100% - 18px)", top: "16.666%" },
+        酉: { left: "calc(100% - 18px)", top: "50%" },
+        戌: { left: "calc(100% - 18px)", top: "83.333%" },
+        亥: { left: "83.333%", top: "calc(100% - 18px)" },
+      };
+      const horseBranchPositions = {
+        寅: { left: "10px", top: "calc(100% - 22px)" },
+        巳: { left: "10px", top: "22px" },
+        申: { left: "calc(100% - 10px)", top: "22px" },
+        亥: { left: "calc(100% - 10px)", top: "calc(100% - 22px)" },
+      };
+      const calendarDate = document.querySelector("#calendarDate");
+      const calendarResult = document.querySelector("#calendarResult");
+      const qimenDateTime = document.querySelector("#qimenDateTime");
+      const qimenResult = document.querySelector("#qimenResult");
+      const views = {
+        home: document.querySelector("#homeView"),
+        bazi: document.querySelector("#baziView"),
+        qimen: document.querySelector("#qimenView"),
+      };
+
+      function showView(name) {
+        for (const [viewName, view] of Object.entries(views)) {
+          view.classList.toggle("active", viewName === name);
+        }
+        window.scrollTo({ top: 0, behavior: "auto" });
+      }
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;");
+      }
+
+      function todayText(date = new Date()) {
+        const offset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+      }
+
+      function dateTimeText(date = new Date()) {
+        const offset = date.getTimezoneOffset() * 60000;
+        return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+      }
+
+      function parseDate(value) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+        if (!match) throw new Error("请选择一个完整日期。");
+        return match.slice(1).map(Number);
+      }
+
+      function parseDateTime(value) {
+        const match = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(value);
+        if (!match) throw new Error("请选择一个完整时间。");
+        const [year, month, day, hour, minute] = match.slice(1).map(Number);
+        return { year, month, day, hour, minute };
+      }
+
+      function solarToDate(solar) {
+        return new Date(
+          solar.getYear(),
+          solar.getMonth() - 1,
+          solar.getDay(),
+          solar.getHour(),
+          solar.getMinute(),
+          solar.getSecond(),
+        );
+      }
+
+      function localDateOnly(date) {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      }
+
+      function getYuanInfoByFuTou(year, month, day) {
+        const yuanByBranch = {
+          子: 0,
+          午: 0,
+          卯: 0,
+          酉: 0,
+          寅: 1,
+          申: 1,
+          巳: 1,
+          亥: 1,
+          辰: 2,
+          戌: 2,
+          丑: 2,
+          未: 2,
+        };
+
+        for (let i = 0; i < 5; i += 1) {
+          const date = new Date(year, month - 1, day - i, 12, 0, 0);
+          const solar = window.Solar.fromYmdHms(date.getFullYear(), date.getMonth() + 1, date.getDate(), 12, 0, 0);
+          const lunar = solar.getLunar();
+          const gan = lunar.getDayGan();
+          if (gan === "甲" || gan === "己") {
+            const zhi = lunar.getDayZhi();
+            return {
+              yuanIndex: yuanByBranch[zhi],
+              fuTou: lunar.getDayInGanZhi(),
+            };
+          }
+        }
+
+        throw new Error("没有找到当前日期对应的甲/己符头。");
+      }
+
+      function formatDateTime(date) {
+        const pad = (value) => String(value).padStart(2, "0");
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+      }
+
+      function getDiPan(type, number) {
+        const result = {};
+
+        if (type === "yang") {
+          let gong = number;
+          for (let i = 0; i < 9; i += 1) {
+            result[String(gong)] = sanQiLiuYi[i];
+            gong += 1;
+            if (gong === 10) gong = 1;
+          }
+        } else {
+          let gong = number;
+          for (let i = 0; i < 9; i += 1) {
+            result[String(gong)] = sanQiLiuYi[i];
+            gong -= 1;
+            if (gong === 0) gong = 9;
+          }
+        }
+
+        return result;
+      }
+
+      function findGongByStem(map, stem, fallback) {
+        for (const gong of Object.keys(map)) {
+          if (gong !== "5" && map[gong] === stem) return gong;
+        }
+        if (map["5"] === stem) return "2";
+        return fallback;
+      }
+
+      function findRawGongByStem(map, stem, fallback) {
+        for (const gong of Object.keys(map)) {
+          if (map[gong] === stem) return gong;
+        }
+        return fallback;
+      }
+
+      function appendStem(current, stem) {
+        if (!stem) return current || "";
+        if (!current) return stem;
+        return current.includes(stem) ? current : `${current}${stem}`;
+      }
+
+      function applyDiPanZhongToKun(diPan) {
+        return {
+          ...diPan,
+          2: appendStem(diPan["2"], diPan["5"]),
+          5: "",
+        };
+      }
+
+      function applyTianPanZhongToTianRui(tianPan, zhongStem, stars) {
+        const result = { ...tianPan, 5: "" };
+        const tianRuiGong = Object.keys(stars).find((gong) => stars[gong] === "天芮") || "2";
+        result[tianRuiGong] = appendStem(result[tianRuiGong], zhongStem);
+        return result;
+      }
+
+      function getXunShou(lunar) {
+        const xunToLiuYi = {
+          甲子: "戊",
+          甲戌: "己",
+          甲申: "庚",
+          甲午: "辛",
+          甲辰: "壬",
+          甲寅: "癸",
+        };
+        return xunToLiuYi[lunar.getTimeXun()] || "戊";
+      }
+
+      function getKongWang(timeXun) {
+        const xunKong = {
+          甲子: "戌亥",
+          甲戌: "申酉",
+          甲申: "午未",
+          甲午: "辰巳",
+          甲辰: "寅卯",
+          甲寅: "子丑",
+        };
+        return xunKong[timeXun] || "";
+      }
+
+      function getMaXing(timeBranch) {
+        if (["申", "子", "辰"].includes(timeBranch)) return "寅";
+        if (["寅", "午", "戌"].includes(timeBranch)) return "申";
+        if (["巳", "酉", "丑"].includes(timeBranch)) return "亥";
+        if (["亥", "卯", "未"].includes(timeBranch)) return "巳";
+        return "";
+      }
+
+      function getGongsByBranches(branchText) {
+        return [...new Set([...branchText].map((branch) => branchToGong[branch]).filter(Boolean))];
+      }
+
+      function markerStyle(position) {
+        return `left:${position.left};top:${position.top};`;
+      }
+
+      function renderOuterMarkers(data) {
+        const kongMarkers = data.kongWangBranches
+          .map((branch) => {
+            const position = outerBranchPositions[branch];
+            if (!position) return "";
+            return `<span class="outer-marker kong" title="空亡 ${escapeHtml(branch)}" style="${markerStyle(position)}"></span>`;
+          })
+          .join("");
+        const horsePosition = horseBranchPositions[data.maXing] || outerBranchPositions[data.maXing];
+        const horseMarker = horsePosition
+          ? `<span class="outer-marker horse" title="马星 ${escapeHtml(data.maXing)}" style="${markerStyle(horsePosition)}">♞</span>`
+          : "";
+        return `${kongMarkers}${horseMarker}`;
+      }
+
+      function distributeTianPan(diPan, xunShou, timeStem, type) {
+        const result = {};
+        const zhiFuRawGong = findRawGongByStem(diPan, xunShou, "2");
+        const zhiFuGong = zhiFuRawGong === "5" ? "2" : zhiFuRawGong;
+        const timeStemGong = findGongByStem(diPan, timeStem, zhiFuGong);
+        const zhiFuIndex = luoShuOrder.indexOf(zhiFuGong);
+        const timeIndex = luoShuOrder.indexOf(timeStemGong);
+        const steps =
+          type === "yang"
+            ? (timeIndex - zhiFuIndex + 8) % 8
+            : (zhiFuIndex - timeIndex + 8) % 8;
+
+        for (let i = 0; i < 8; i += 1) {
+          const sourceGong = luoShuOrder[i];
+          const targetIndex = type === "yang" ? (i + steps) % 8 : (i - steps + 8) % 8;
+          result[luoShuOrder[targetIndex]] = diPan[sourceGong];
+        }
+        result["5"] = "";
+
+        return { tianPan: result, zhongStem: diPan["5"], zhiFuGong, zhiFuRawGong, timeStemGong };
+      }
+
+      function distributeJiuXing(diPan, xunShou, timeStem, type) {
+        const zhiFuGong = findGongByStem(diPan, xunShou, "2");
+        const timeStemGong = findGongByStem(diPan, timeStem, zhiFuGong);
+        const zhiFuXing = basicStars[zhiFuGong];
+        const timeIndex = luoShuOrder.indexOf(timeStemGong);
+        const starOrder = ["天蓬", "天任", "天冲", "天辅", "天英", "天芮", "天柱", "天心"];
+        const starIndex = starOrder.indexOf(zhiFuXing);
+        const result = { 5: "" };
+
+        for (let i = 0; i < 8; i += 1) {
+          const targetGong = luoShuOrder[(timeIndex + i) % 8];
+          result[targetGong] = starOrder[(starIndex + i) % 8];
+        }
+
+        return {
+          stars: result,
+          zhiFuGong: timeStemGong,
+          zhiFuXing,
+        };
+      }
+
+      function branchDistance(fromBranch, toBranch) {
+        const fromIndex = branches.indexOf(fromBranch);
+        const toIndex = branches.indexOf(toBranch);
+        if (fromIndex < 0 || toIndex < 0) return 0;
+        return (toIndex - fromIndex + 12) % 12;
+      }
+
+      function movePalaceByBranch(startGong, steps, type) {
+        let gong = Number(startGong);
+        for (let i = 0; i < steps; i += 1) {
+          if (type === "yang") {
+            gong += 1;
+            if (gong === 10) gong = 1;
+          } else {
+            gong -= 1;
+            if (gong === 0) gong = 9;
+          }
+        }
+        return gong === 5 ? "2" : String(gong);
+      }
+
+      function distributeBaMen(zhiFuOriginalGong, timeXun, timeBranch, type) {
+        const zhiShiMen = basicDoors[zhiFuOriginalGong === "5" ? "2" : zhiFuOriginalGong] || "";
+        const xunBranch = timeXun.slice(1);
+        const steps = branchDistance(xunBranch, timeBranch);
+        const zhiShiGong = movePalaceByBranch(zhiFuOriginalGong, steps, type);
+        const timeIndex = luoShuOrder.indexOf(zhiShiGong);
+        const doorOrder = ["休门", "生门", "伤门", "杜门", "景门", "死门", "惊门", "开门"];
+        const doorIndex = doorOrder.indexOf(zhiShiMen);
+        const result = { 5: "" };
+
+        for (let i = 0; i < 8; i += 1) {
+          const targetGong = luoShuOrder[(timeIndex + i) % 8];
+          result[targetGong] = doorOrder[(doorIndex + i) % 8];
+        }
+
+        return { doors: result, zhiShiMen, zhiShiGong };
+      }
+
+      function getDoorOriginalGong(door) {
+        return Object.keys(basicDoors).find((gong) => basicDoors[gong] === door && gong !== "5") || "";
+      }
+
+      function distributeDarkGan(doors, diPan) {
+        const result = { 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: "" };
+
+        for (const gong of Object.keys(doors)) {
+          const originalGong = getDoorOriginalGong(doors[gong]);
+          result[gong] = originalGong ? diPan[originalGong] || "" : "";
+        }
+
+        return result;
+      }
+
+      function distributeBaShen(zhiFuGong, type) {
+        const gods = ["值符", "腾蛇", "太阴", "六合", "白虎", "玄武", "九地", "九天"];
+        const order =
+          type === "yang"
+            ? ["1", "8", "3", "4", "9", "2", "7", "6"]
+            : ["1", "6", "7", "2", "9", "4", "3", "8"];
+        const result = { 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: "" };
+        const startGong = zhiFuGong === "5" ? "2" : zhiFuGong;
+        const startIndex = order.indexOf(startGong);
+
+        for (let i = 0; i < 8; i += 1) {
+          result[order[(startIndex + i) % 8]] = gods[i];
+        }
+
+        return result;
+      }
+
+      function shortGod(god) {
+        const map = {
+          值符: "符",
+          腾蛇: "蛇",
+          太阴: "阴",
+          六合: "合",
+          白虎: "虎",
+          玄武: "玄",
+          九地: "地",
+          九天: "天",
+        };
+        return map[god] || "";
+      }
+
+      function shortDoor(door) {
+        const map = {
+          开门: "开",
+          休门: "休",
+          生门: "生",
+          伤门: "伤",
+          杜门: "杜",
+          景门: "景",
+          死门: "死",
+          惊门: "惊",
+        };
+        return map[door] || "";
+      }
+
+      function shortStar(star) {
+        const map = {
+          天蓬: "蓬",
+          天任: "任",
+          天冲: "冲",
+          天辅: "辅",
+          天英: "英",
+          天芮: "芮禽",
+          天禽: "禽",
+          天柱: "柱",
+          天心: "心",
+        };
+        return map[star] || "";
+      }
+
+      function renderStarText(star) {
+        if (star === "天芮") return `芮<span class="tian-qin">禽</span>`;
+        return escapeHtml(shortStar(star));
+      }
+
+      function renderHeavenStemText(data, gong) {
+        const stems = [...(data.tianPan[gong] || "")];
+        if (data.stars[gong] !== "天芮" || stems.length < 2) return escapeHtml(data.tianPan[gong] || "");
+        return `${escapeHtml(stems[0])}<span class="tian-qin">${escapeHtml(stems.slice(1).join(""))}</span>`;
+      }
+
+      function getStemChangSheng(stem, branch) {
+        const startBranch = stemChangShengStart[stem];
+        if (!startBranch || !branch) return "";
+        const startIndex = branches.indexOf(startBranch);
+        const branchIndex = branches.indexOf(branch);
+        if (startIndex < 0 || branchIndex < 0) return "";
+        const offset = yangStems.has(stem)
+          ? (branchIndex - startIndex + 12) % 12
+          : (startIndex - branchIndex + 12) % 12;
+        return changShengNames[offset] || "";
+      }
+
+      function firstStem(stems) {
+        return [...(stems || "")].find((stem) => stemChangShengStart[stem]) || "";
+      }
+
+      function yinYangBranchByStem(gong, stem) {
+        const branchPair = palaceYinYangBranch[gong];
+        if (!branchPair || !stem) return palaceMainBranch[gong];
+        return yangStems.has(stem) ? branchPair.yang : branchPair.yin;
+      }
+
+      function getStemStateBranch(stem, gong, kind, data) {
+        if (kind === "earth" && gong === "2") {
+          return yinYangBranchByStem(gong, firstStem(data.tianPan[gong]));
+        }
+
+        if (kind === "heaven" && data.stars[gong] === "天芮" && palaceYinYangBranch[gong]) {
+          return yinYangBranchByStem(gong, firstStem(data.diPan[gong]));
+        }
+
+        return palaceMainBranch[gong];
+      }
+
+      function getStemStates(stems, gong, kind, data) {
+        return [...(stems || "")]
+          .map((stem) => getStemChangSheng(stem, getStemStateBranch(stem, gong, kind, data)))
+          .join("");
+      }
+
+      function getDoorState(door, gong) {
+        const itemElement = doorElements[door];
+        const gongElement = palaceElement[gong];
+        if (!itemElement || !gongElement) return "";
+        if (itemElement === gongElement) return "旺";
+        if (elementGenerates[gongElement] === itemElement) return "相";
+        if (elementGenerates[itemElement] === gongElement) return "休";
+        if (elementControls[itemElement] === gongElement) return "囚";
+        if (elementControls[gongElement] === itemElement) return "死";
+        return "";
+      }
+
+      function getStarState(star, gong) {
+        const itemElement = starElements[star];
+        const gongElement = palaceElement[gong];
+        if (!itemElement || !gongElement) return "";
+        if (elementGenerates[itemElement] === gongElement) return "旺";
+        if (itemElement === gongElement) return "相";
+        if (elementGenerates[gongElement] === itemElement) return "废";
+        if (elementControls[itemElement] === gongElement) return "休";
+        if (elementControls[gongElement] === itemElement) return "囚";
+        return "";
+      }
+
+      function buildDateResult(value) {
+        if (!window.Solar?.fromYmdHms) throw new Error("本地历法库没有加载成功。");
+        if (!window.iztro?.astro) throw new Error("本地 iztro 没有加载成功。");
+
+        const { year, month, day, hour, minute } = parseDateTime(value);
+        const solar = window.Solar.fromYmdHms(year, month, day, hour, minute, 0);
+        const lunar = solar.getLunar();
+        const eightChar = lunar.getEightChar();
+        const bazi = [
+          eightChar.getYear(),
+          eightChar.getMonth(),
+          eightChar.getDay(),
+          eightChar.getTime(),
+        ].join(" ");
+
+        const createAstrolabe = window.iztro.astro.bySolar || window.iztro.astro.astrolabeBySolarDate;
+        const astrolabe = createAstrolabe(value.slice(0, 10), 0, "男", true, "zh-CN");
+
+        return {
+          lunar: lunar.toString(),
+          bazi,
+          ziwei: astrolabe.chineseDate,
+        };
+      }
+
+      function renderCalendar() {
+        try {
+          const data = buildDateResult(calendarDate.value);
+          calendarResult.innerHTML = `
+            <div class="item"><div class="label">农历</div><div class="value">${escapeHtml(data.lunar)}</div></div>
+            <div class="item"><div class="label">八字四柱</div><div class="value">${escapeHtml(data.bazi)}</div></div>
+            <div class="item"><div class="label">紫微干支</div><div class="value">${escapeHtml(data.ziwei)}</div></div>
+          `;
+        } catch (error) {
+          calendarResult.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      function calculateQimen(value) {
+        if (!window.Solar?.fromYmdHms) throw new Error("本地历法库没有加载成功。");
+
+        const { year, month, day, hour, minute } = parseDateTime(value);
+        const solar = window.Solar.fromYmdHms(year, month, day, hour, minute, 0);
+        const lunar = solar.getLunar();
+        const prevJieQi = lunar.getPrevJieQi(false);
+        if (!prevJieQi) throw new Error("没有找到当前时间之前的节气。");
+
+        const jieQiName = prevJieQi.getName();
+        const table = qimenJuTable[jieQiName];
+        if (!table) throw new Error(`暂未收录 ${jieQiName} 的局数。`);
+
+        const startDate = solarToDate(prevJieQi.getSolar());
+        const currentDate = new Date(year, month - 1, day, hour, minute, 0);
+        const daysFromJieQi = Math.max(0, Math.floor((currentDate - startDate) / 86400000));
+        const yuanInfo = getYuanInfoByFuTou(year, month, day);
+        const yuanIndex = yuanInfo.yuanIndex;
+        const type = table.dun === "阳遁" ? "yang" : "yin";
+        const ju = table.ju[yuanIndex];
+        const diPan = getDiPan(type, ju);
+        const xunShou = getXunShou(lunar);
+        const timeXun = lunar.getTimeXun();
+        const timeStem = lunar.getTimeGan();
+        const timeBranch = lunar.getTimeZhi();
+        const monthBranch = lunar.getMonthZhi();
+        const kongWang = getKongWang(timeXun);
+        const maXing = getMaXing(timeBranch);
+        const kongWangBranches = [...kongWang];
+        const kongWangGongs = getGongsByBranches(kongWang);
+        const maXingGong = branchToGong[maXing] || "";
+        const tianPanInfo = distributeTianPan(diPan, xunShou, timeStem, type);
+        const starInfo = distributeJiuXing(diPan, xunShou, timeStem, type);
+        const displayDiPan = applyDiPanZhongToKun(diPan);
+        const displayTianPan = applyTianPanZhongToTianRui(tianPanInfo.tianPan, tianPanInfo.zhongStem, starInfo.stars);
+        const doorInfo = distributeBaMen(tianPanInfo.zhiFuRawGong, timeXun, timeBranch, type);
+        const darkGan = distributeDarkGan(doorInfo.doors, displayDiPan);
+        const gods = distributeBaShen(starInfo.zhiFuGong, type);
+        const earthGods = distributeBaShen(tianPanInfo.zhiFuGong, type);
+
+        return {
+          dun: table.dun,
+          ju,
+          yuan: yuanNames[yuanIndex],
+          jieQiName,
+          jieQiTime: formatDateTime(startDate),
+          dayNumber: daysFromJieQi + 1,
+          fuTou: yuanInfo.fuTou,
+          siZhu: {
+            year: lunar.getYearInGanZhi(),
+            month: lunar.getMonthInGanZhi(),
+            day: lunar.getDayInGanZhi(),
+            time: lunar.getTimeInGanZhi(),
+          },
+          xunShou,
+          timeXun,
+          timeStem,
+          timeBranch,
+          monthBranch,
+          kongWang,
+          maXing,
+          kongWangBranches,
+          kongWangGongs,
+          maXingGong,
+          diPan: displayDiPan,
+          tianPan: displayTianPan,
+          darkGan,
+          stars: starInfo.stars,
+          doors: doorInfo.doors,
+          gods,
+          earthGods,
+          zhiFuXing: starInfo.zhiFuXing,
+          zhiShiMen: doorInfo.zhiShiMen,
+        };
+      }
+
+      function renderQimenBoard(data) {
+        return `
+          <div class="qimen-board-wrap">
+            <div class="qimen-board">
+              ${boardOrder
+                .map((gong) => {
+                  if (gong === "5") {
+                    return `
+                      <div class="qimen-palace center-palace">
+                        <strong>${escapeHtml(data.dun)}${data.ju}局</strong>
+                        <span>值符：${escapeHtml(data.zhiFuXing)}</span>
+                        <span>值使：${escapeHtml(data.zhiShiMen)}</span>
+                      </div>
+                    `;
+                  }
+
+                  const isTianQinGong = data.stars[gong] === "天芮";
+                  const heavenStemClass = isTianQinGong ? "stem-heaven stem-horizontal" : "stem-heaven";
+                  const earthStemClass = gong === "2" ? "stem-earth stem-horizontal" : "stem-earth";
+
+                  return `
+                    <div class="qimen-palace">
+                      <span class="dark-stem">${escapeHtml(data.darkGan[gong] || "")}</span>
+                      <span class="god">${escapeHtml(shortGod(data.gods[gong]))}</span>
+                      <span class="star">${renderStarText(data.stars[gong])}</span>
+                      <span class="star-state">${escapeHtml(getStarState(data.stars[gong], gong))}</span>
+                      <span class="door">${escapeHtml(shortDoor(data.doors[gong]))}</span>
+                      <span class="door-state">${escapeHtml(getDoorState(data.doors[gong], gong))}</span>
+                      <span class="${heavenStemClass}" title="天盘干">${renderHeavenStemText(data, gong)}</span>
+                      <span class="stem-heaven-state">${escapeHtml(getStemStates(data.tianPan[gong], gong, "heaven", data))}</span>
+                      <span class="${earthStemClass}" title="地盘干">${escapeHtml(data.diPan[gong] || "")}</span>
+                      <span class="stem-earth-state">${escapeHtml(getStemStates(data.diPan[gong], gong, "earth", data))}</span>
+                      <span class="earth-god" title="地八神">${escapeHtml(shortGod(data.earthGods[gong]))}</span>
+                    </div>
+                  `;
+                })
+                .join("")}
+            </div>
+            ${renderOuterMarkers(data)}
+          </div>
+        `;
+      }
+
+      function renderQimen() {
+        try {
+          const data = calculateQimen(qimenDateTime.value);
+          qimenResult.innerHTML = `
+            <strong>${escapeHtml(data.dun)}${data.ju}局 · ${escapeHtml(data.yuan)}</strong>
+            <div>排法：拆补法定局；九星、八门顺排；天盘干、地盘干、八神按阳顺阴逆</div>
+            <div>当前节气：${escapeHtml(data.jieQiName)}</div>
+            <div>节气时间：${escapeHtml(data.jieQiTime)}</div>
+            <div>距节气：第 ${data.dayNumber} 天；符头：${escapeHtml(data.fuTou)}</div>
+            <div>四柱：${escapeHtml(data.siZhu.year)} ${escapeHtml(data.siZhu.month)} ${escapeHtml(data.siZhu.day)} ${escapeHtml(data.siZhu.time)}</div>
+            <div>旬首：${escapeHtml(data.timeXun)} · 旬首六仪：${escapeHtml(data.xunShou)} · 值符：${escapeHtml(data.zhiFuXing)} · 值使：${escapeHtml(data.zhiShiMen)}</div>
+            ${renderQimenBoard(data)}
+            <div>旬首：${escapeHtml(data.timeXun)}${escapeHtml(data.xunShou)}　空亡：${escapeHtml(data.kongWang)}　马星：${escapeHtml(data.maXing)}</div>
+          `;
+        } catch (error) {
+          qimenResult.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
+        }
+      }
+
+      document.querySelector("#queryCalendar").addEventListener("click", renderCalendar);
+      document.querySelector("#calendarNow").addEventListener("click", () => {
+        calendarDate.value = dateTimeText();
+        renderCalendar();
+      });
+      document.querySelector("#calcQimen").addEventListener("click", renderQimen);
+      document.querySelector("#qimenNow").addEventListener("click", () => {
+        qimenDateTime.value = dateTimeText();
+        renderQimen();
+      });
+      document.querySelector("#openBazi").addEventListener("click", () => showView("bazi"));
+      document.querySelector("#openQimen").addEventListener("click", () => showView("qimen"));
+      document.querySelectorAll("[data-back]").forEach((button) => {
+        button.addEventListener("click", () => showView("home"));
+      });
+
+      calendarDate.value = dateTimeText();
+      qimenDateTime.value = dateTimeText();
+      renderCalendar();
+      renderQimen();
+    </script>
+  </body>
+</html>
