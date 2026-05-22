@@ -7,6 +7,8 @@
     <script src="./vendor/lunar.js"></script>
     <script src="./vendor/iztro.min.js"></script>
     <style>
+      @import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css");
+
       :root {
         --bg: #f6f3ed;
         --panel: #ffffff;
@@ -75,25 +77,27 @@
 
       .home-actions {
         display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 14px;
       }
 
       .nav-card {
         width: 100%;
-        min-height: 112px;
+        min-height: 96px;
         border: 1px solid var(--line);
         border-radius: 8px;
         background: var(--panel);
         box-shadow: var(--shadow);
         color: var(--ink);
         text-align: left;
-        padding: 20px;
+        padding: 18px 16px;
+        text-align: center;
       }
 
       .nav-card strong {
         display: block;
-        font-size: 25px;
-        margin-bottom: 8px;
+        font-size: 28px;
+        margin-bottom: 0;
       }
 
       .nav-card span {
@@ -265,7 +269,7 @@
         border: 1px solid #c65579;
         padding: 8px;
         overflow: hidden;
-        font-family: KaiTi, "KaiTi_GB2312", "STKaiti", "Kaiti SC", serif;
+        font-family: "LXGW WenKai Screen", KaiTi, "KaiTi_GB2312", "STKaiti", "Kaiti SC", serif;
       }
 
       .dark-stem,
@@ -526,11 +530,11 @@
         </header>
         <div class="home-actions">
           <button class="nav-card" id="openBazi" type="button">
-            <strong>八字排盘</strong>
+            <strong>八字</strong>
             <span>查询农历、八字四柱和紫微干支。</span>
           </button>
           <button class="nav-card" id="openQimen" type="button">
-            <strong>奇门排盘</strong>
+            <strong>奇门</strong>
             <span>按指定时间计算阴阳遁、局数和九宫盘。</span>
           </button>
         </div>
