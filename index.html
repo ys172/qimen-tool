@@ -6,8 +6,15 @@
     <title>历法与奇门定局</title>
     <script src="./vendor/lunar.js"></script>
     <script src="./vendor/iztro.min.js"></script>
+    <script src="./data/ke-ying.js"></script>
     <style>
       @import url("https://cdn.jsdelivr.net/npm/lxgw-wenkai-screen-webfont@1.7.0/style.css");
+
+      @font-face {
+        font-family: "QimenKai";
+        src: url("./fonts/LXGWWenKaiScreen.ttf") format("truetype");
+        font-display: swap;
+      }
 
       :root {
         --bg: #f6f3ed;
@@ -233,26 +240,90 @@
       }
 
       .qimen-main {
-        padding: 18px;
+        padding: 12px;
         background: #fbfaf7;
         border-top: 1px solid var(--line);
       }
 
-      .qimen-main strong {
+      .qimen-title {
         display: block;
-        font-size: 28px;
-        margin-bottom: 8px;
+        font-size: 30px;
+        margin-bottom: 10px;
+        color: var(--ink);
+        line-height: 1.25;
       }
 
       .qimen-main div {
         color: var(--muted);
-        line-height: 1.75;
+        line-height: 1.6;
+      }
+
+      .qimen-summary {
+        margin-bottom: 6px;
+      }
+
+      .qimen-time {
+        margin-bottom: 6px;
+        font-size: 17px;
+        color: var(--ink);
+      }
+
+      .qimen-time span {
+        color: #1e63d6;
+      }
+
+      .qimen-info-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 12px;
+        align-items: center;
+      }
+
+      .sizhu-table {
+        border-collapse: collapse;
+        background: #fff;
+        color: var(--ink);
+        flex: 0 0 auto;
+      }
+
+      .sizhu-table th,
+      .sizhu-table td {
+        border: 1px solid #cfcfcf;
+        width: 36px;
+        height: 30px;
+        text-align: center;
+        font-size: 20px;
+        line-height: 1;
+        font-weight: 700;
+      }
+
+      .sizhu-table .side {
+        width: 30px;
+        font-size: 18px;
+        color: var(--ink);
+      }
+
+      .sizhu-gan {
+        color: #174fe0;
+      }
+
+      .sizhu-zhi {
+        color: #18855e;
+      }
+
+      .qimen-brief {
+        min-width: 0;
+        font-size: 14px;
+      }
+
+      .qimen-brief div {
+        line-height: 1.55;
       }
 
       .qimen-board-wrap {
         position: relative;
-        margin-top: 14px;
-        padding: 18px;
+        margin-top: 8px;
+        padding: 18px 18px 26px;
       }
 
       .qimen-board {
@@ -269,7 +340,14 @@
         border: 1px solid #c65579;
         padding: 8px;
         overflow: hidden;
-        font-family: "LXGW WenKai Screen", KaiTi, "KaiTi_GB2312", "STKaiti", "Kaiti SC", serif;
+        font-family: "QimenKai", "LXGW WenKai Screen", KaiTi, "KaiTi_GB2312", "STKaiti", "Kaiti SC", serif;
+        cursor: pointer;
+      }
+
+      .qimen-palace.selected {
+        outline: 3px solid rgba(139, 47, 47, 0.32);
+        outline-offset: -5px;
+        background: #fffaf4;
       }
 
       .dark-stem,
@@ -412,8 +490,8 @@
 
       .outer-marker {
         position: absolute;
-        width: 32px;
-        height: 32px;
+        width: 16px;
+        height: 16px;
         border-radius: 50%;
         background: #fff;
         border: 2px solid #111;
@@ -437,6 +515,7 @@
         text-align: center;
         background: #fffdf8;
         display: grid;
+        cursor: default;
       }
 
       .center-palace strong {
@@ -455,6 +534,72 @@
         color: #9b1c1c;
         padding: 18px;
         line-height: 1.7;
+      }
+
+      .keying-panel {
+        margin: 12px 0 0;
+        padding: 14px;
+        border: 1px solid #eadfce;
+        border-radius: 8px;
+        background: #fffdf8;
+      }
+
+      .keying-panel h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+
+      .keying-section {
+        padding-top: 10px;
+        margin-top: 10px;
+        border-top: 1px solid #eee4d7;
+      }
+
+      .keying-section:first-of-type {
+        border-top: 0;
+        margin-top: 0;
+        padding-top: 0;
+      }
+
+      .keying-section strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 15px;
+        color: var(--ink);
+      }
+
+      .keying-entry {
+        margin: 6px 0;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 14px;
+      }
+
+      .keying-entry b {
+        color: var(--brand);
+      }
+
+      .qimen-footnote {
+        margin-top: 0;
+        padding: 0 6px;
+        color: var(--ink);
+        font-weight: 700;
+        line-height: 1.45;
+      }
+
+      .special-panel {
+        margin: 12px 0 0;
+        padding: 12px 14px;
+        border: 1px solid #eadfce;
+        border-radius: 8px;
+        background: #fff8ee;
+        color: var(--muted);
+        line-height: 1.65;
+        font-size: 14px;
+      }
+
+      .special-panel b {
+        color: var(--brand);
       }
 
       @media (max-width: 760px) {
@@ -476,11 +621,40 @@
         }
 
         .qimen-main {
-          padding: 10px;
+          padding: 8px;
+        }
+
+        .qimen-title {
+          font-size: 28px;
+          margin-bottom: 8px;
+        }
+
+        .qimen-time {
+          font-size: 16px;
+        }
+
+        .qimen-info-row {
+          gap: 8px;
+        }
+
+        .sizhu-table th,
+        .sizhu-table td {
+          width: 31px;
+          height: 28px;
+          font-size: 18px;
+        }
+
+        .sizhu-table .side {
+          width: 26px;
+          font-size: 16px;
+        }
+
+        .qimen-brief {
+          font-size: 13px;
         }
 
         .qimen-board-wrap {
-          padding: 12px;
+          padding: 14px;
         }
 
         .qimen-palace {
@@ -652,6 +826,16 @@
         8: "艮八宫",
         9: "离九宫",
       };
+      const palaceKeyingNumbers = {
+        1: "1，6，6，1",
+        2: "5，10，8，2",
+        3: "3，8，4，3",
+        4: "3，8，5，4",
+        6: "4，9，1，6",
+        7: "4，9，2，7",
+        8: "5，10，7，8",
+        9: "2，7，3，9",
+      };
       const branches = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"];
       const palaceMainBranch = {
         1: "子",
@@ -695,6 +879,18 @@
       };
       const elementGenerates = { 木: "火", 火: "土", 土: "金", 金: "水", 水: "木" };
       const elementControls = { 木: "土", 土: "水", 水: "火", 火: "金", 金: "木" };
+      const stemElement = {
+        甲: "木",
+        乙: "木",
+        丙: "火",
+        丁: "火",
+        戊: "土",
+        己: "土",
+        庚: "金",
+        辛: "金",
+        壬: "水",
+        癸: "水",
+      };
       const stemChangShengStart = {
         甲: "亥",
         乙: "午",
@@ -709,6 +905,16 @@
       };
       const yangStems = new Set(["甲", "丙", "戊", "庚", "壬"]);
       const changShengNames = ["长", "沐", "冠", "临", "旺", "衰", "病", "死", "墓", "绝", "胎", "养"];
+      const oppositePalace = {
+        1: "9",
+        9: "1",
+        2: "8",
+        8: "2",
+        3: "7",
+        7: "3",
+        4: "6",
+        6: "4",
+      };
       const doorElements = {
         开门: "金",
         休门: "水",
@@ -744,18 +950,18 @@
         亥: "6",
       };
       const outerBranchPositions = {
-        子: { left: "50%", top: "calc(100% - 18px)" },
-        丑: { left: "16.666%", top: "calc(100% - 18px)" },
-        寅: { left: "18px", top: "83.333%" },
-        卯: { left: "18px", top: "50%" },
-        辰: { left: "16.666%", top: "18px" },
-        巳: { left: "18px", top: "16.666%" },
-        午: { left: "50%", top: "18px" },
-        未: { left: "83.333%", top: "18px" },
-        申: { left: "calc(100% - 18px)", top: "16.666%" },
-        酉: { left: "calc(100% - 18px)", top: "50%" },
-        戌: { left: "calc(100% - 18px)", top: "83.333%" },
-        亥: { left: "83.333%", top: "calc(100% - 18px)" },
+        子: { left: "50%", top: "calc(100% - 10px)" },
+        丑: { left: "16.666%", top: "calc(100% - 10px)" },
+        寅: { left: "10px", top: "83.333%" },
+        卯: { left: "10px", top: "50%" },
+        辰: { left: "16.666%", top: "10px" },
+        巳: { left: "10px", top: "16.666%" },
+        午: { left: "50%", top: "10px" },
+        未: { left: "83.333%", top: "10px" },
+        申: { left: "calc(100% - 10px)", top: "16.666%" },
+        酉: { left: "calc(100% - 10px)", top: "50%" },
+        戌: { left: "calc(100% - 10px)", top: "83.333%" },
+        亥: { left: "83.333%", top: "calc(100% - 10px)" },
       };
       const horseBranchPositions = {
         寅: { left: "10px", top: "calc(100% - 22px)" },
@@ -862,6 +1068,44 @@
       function formatDateTime(date) {
         const pad = (value) => String(value).padStart(2, "0");
         return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+      }
+
+      function formatInputDateTime(value) {
+        return value ? value.replace("T", " ") : "";
+      }
+
+      function splitGanZhi(ganZhi) {
+        return {
+          gan: [...(ganZhi || "")][0] || "",
+          zhi: [...(ganZhi || "")][1] || "",
+        };
+      }
+
+      function renderSiZhuTable(siZhu) {
+        const pillars = [siZhu.year, siZhu.month, siZhu.day, siZhu.time].map(splitGanZhi);
+        return `
+          <table class="sizhu-table" aria-label="四柱">
+            <tr><th></th><th>年</th><th>月</th><th>日</th><th>时</th></tr>
+            <tr><td class="side">干</td>${pillars.map((item) => `<td class="sizhu-gan">${escapeHtml(item.gan)}</td>`).join("")}</tr>
+            <tr><td class="side">支</td>${pillars.map((item) => `<td class="sizhu-zhi">${escapeHtml(item.zhi)}</td>`).join("")}</tr>
+          </table>
+        `;
+      }
+
+      function renderQimenSummary(data) {
+        return `
+          <div class="qimen-summary">
+            <div class="qimen-time">时间: <span>${escapeHtml(data.inputTime)}</span></div>
+            <div class="qimen-info-row">
+              ${renderSiZhuTable(data.siZhu)}
+              <div class="qimen-brief">
+                <div>${escapeHtml(data.jieQiName)}: ${escapeHtml(data.jieQiTime)}</div>
+                <div>${escapeHtml(data.nextJieQiName)}: ${escapeHtml(data.nextJieQiTime)}</div>
+                <div>拆补 ${escapeHtml(data.jieQiName)}${escapeHtml(data.yuan)} ${escapeHtml(data.dun)}${data.ju}局</div>
+              </div>
+            </div>
+          </div>
+        `;
       }
 
       function getDiPan(type, number) {
@@ -1063,6 +1307,179 @@
         return Object.keys(basicDoors).find((gong) => basicDoors[gong] === door && gong !== "5") || "";
       }
 
+      function doorShortName(door) {
+        return shortDoor(door);
+      }
+
+      function splitStems(stems) {
+        return [...(stems || "")].filter((stem) => stemChangShengStart[stem]);
+      }
+
+      function uniqueValues(values) {
+        return [...new Set(values.filter(Boolean))];
+      }
+
+      function keyingEntry(label, content) {
+        if (!content) return `<div class="keying-entry"><b>${escapeHtml(label)}</b>：未收录</div>`;
+        if (typeof content === "string") return `<div class="keying-entry"><b>${escapeHtml(label)}</b>：${escapeHtml(content)}</div>`;
+        return `
+          <div class="keying-entry">
+            <b>${escapeHtml(label)} ${escapeHtml(content.name || "")}</b>：${escapeHtml(content.text || "未收录")}
+          </div>
+        `;
+      }
+
+      function renderGanKeying(data, gong) {
+        const store = window.QIMEN_KE_YING?.gan || {};
+        const heavenStems = uniqueValues(splitStems(data.tianPan[gong]));
+        const lowerStems = uniqueValues([...splitStems(data.diPan[gong]), ...splitStems(data.darkGan[gong])]);
+        const entries = [];
+
+        for (const heaven of heavenStems) {
+          for (const lowerStem of lowerStems) {
+            const key = `${heaven}${lowerStem}`;
+            entries.push(keyingEntry(`${heaven}+${lowerStem}`, store[key]));
+          }
+        }
+
+        return entries.length ? entries.join("") : `<div class="keying-entry">此宫没有可查询的天干组合。</div>`;
+      }
+
+      function renderDoorGanKeying(data, gong) {
+        const store = window.QIMEN_KE_YING?.door || {};
+        const door = doorShortName(data.doors[gong]);
+        const stems = uniqueValues([
+          ...splitStems(data.tianPan[gong]),
+          ...splitStems(data.diPan[gong]),
+          ...splitStems(data.darkGan[gong]),
+        ]);
+        const entries = stems.map((stem) => keyingEntry(`${door}+${stem}`, store[`${door}加${stem}`]));
+        return entries.length ? entries.join("") : `<div class="keying-entry">此宫没有可查询的门干组合。</div>`;
+      }
+
+      function renderDoorDoorKeying(data, gong) {
+        const store = window.QIMEN_KE_YING?.door || {};
+        const currentDoor = doorShortName(data.doors[gong]);
+        const originalDoor = doorShortName(basicDoors[gong]);
+        return keyingEntry(`${currentDoor}+${originalDoor}`, store[`${currentDoor}加${originalDoor}`]);
+      }
+
+      function renderBaMenKeying(data, gong) {
+        return `${renderDoorGanKeying(data, gong)}${renderDoorDoorKeying(data, gong)}`;
+      }
+
+      function sameStemYinYang(first, second) {
+        return yangStems.has(first) === yangStems.has(second);
+      }
+
+      function isFiveNoMeet(data) {
+        const timeElement = stemElement[data.timeStem];
+        const dayElement = stemElement[data.dayStem];
+        return Boolean(
+          timeElement &&
+            dayElement &&
+            sameStemYinYang(data.timeStem, data.dayStem) &&
+            elementControls[timeElement] === dayElement,
+        );
+      }
+
+      function isDoorFuYin(data) {
+        return luoShuOrder.every((gong) => data.doors[gong] === basicDoors[gong]);
+      }
+
+      function isStarFuYin(data) {
+        return luoShuOrder.every((gong) => data.stars[gong] === basicStars[gong]);
+      }
+
+      function isDoorFanYin(data) {
+        return luoShuOrder.every((gong) => data.doors[oppositePalace[gong]] === basicDoors[gong]);
+      }
+
+      function isStarFanYin(data) {
+        return luoShuOrder.every((gong) => data.stars[oppositePalace[gong]] === basicStars[gong]);
+      }
+
+      function findGongByDoor(doors, door) {
+        return luoShuOrder.find((gong) => doors[gong] === door) || "";
+      }
+
+      function findGongByStar(stars, star) {
+        return luoShuOrder.find((gong) => stars[gong] === star) || "";
+      }
+
+      function isSmallFuYin(data) {
+        return luoShuOrder.some((originalGong) => {
+          const starGong = findGongByStar(data.stars, basicStars[originalGong]);
+          const doorGong = findGongByDoor(data.doors, basicDoors[originalGong]);
+          return starGong && starGong === doorGong && starGong !== originalGong && starGong !== oppositePalace[originalGong];
+        });
+      }
+
+      function isSmallFanYin(data) {
+        return luoShuOrder.some((gong) => {
+          const originalDoorGong = getDoorOriginalGong(data.doors[gong]);
+          const oppositeStar = basicStars[oppositePalace[originalDoorGong]];
+          return Boolean(originalDoorGong && oppositeStar && data.stars[gong] === oppositeStar);
+        });
+      }
+
+      function getSpecialPattern(data) {
+        const items = [];
+        const doorFuYin = isDoorFuYin(data);
+        const starFuYin = isStarFuYin(data);
+        const doorFanYin = isDoorFanYin(data);
+        const starFanYin = isStarFanYin(data);
+        const smallFuYin = isSmallFuYin(data);
+        const smallFanYin = isSmallFanYin(data);
+
+        if (isFiveNoMeet(data)) {
+          items.push({ name: "五不遇时-百事皆凶", text: "" });
+        }
+
+        if (doorFuYin && starFuYin) {
+          items.push({ name: "星门大伏吟", text: "利主不利客，利静不利动。内外一致举步维艰，内因停滞，外因也不作为。" });
+        } else if (doorFuYin && starFanYin) {
+          items.push({ name: "门伏吟，星反吟", text: "表面看起来风平浪静，实际内部已经酝酿着大的变化。" });
+        } else {
+          if (doorFuYin) items.push({ name: "门伏吟", text: "利主不利客，利静不利动。表面停止，但内部还在运作。" });
+          if (starFuYin && !doorFanYin) {
+            items.push({ name: "星伏吟", text: "利主不利客，利静不利动。表面还在运作，实际内部郁结，趋势进展缓慢。" });
+          }
+          if (smallFuYin && !doorFuYin && !starFuYin) {
+            items.push({ name: "星门小伏吟", text: "原始宫位的星门共同落在其他宫位。" });
+          }
+        }
+
+        if (doorFanYin && starFanYin) {
+          items.push({ name: "星门大反吟", text: "利客不利主，主速度快，事情反复明显。事物的内外因素都发生了变化，正处于大动荡时期。" });
+        } else if (doorFanYin && starFuYin) {
+          items.push({ name: "门反吟，星伏吟", text: "表面看起来变化快，乱糟糟的，其实大局稳定。" });
+        } else {
+          if (doorFanYin) items.push({ name: "门反吟", text: "利客不利主，主速度快，事情多反复。表面看起来变化大，实际内部平静。" });
+          if (starFanYin && !doorFuYin) {
+            items.push({
+              name: "星反吟",
+              text: "利客不利主，主速度快，主事情反复。表面看没事，实际内部已经产生了剧烈变化。",
+            });
+          }
+          if (smallFanYin && !doorFanYin && !starFanYin) {
+            items.push({ name: "星门小反吟", text: "门加原始宫位对冲之九星。" });
+          }
+        }
+
+        return items.length ? items : [{ name: "常局", text: "未见五不遇时、伏吟、反吟等特殊情况。" }];
+      }
+
+      function renderSpecialPattern(data) {
+        return `
+          <div class="special-panel">
+            ${getSpecialPattern(data)
+              .map((item) => `<div><b>${escapeHtml(item.name)}</b>${item.text ? `：${escapeHtml(item.text)}` : ""}</div>`)
+              .join("")}
+          </div>
+        `;
+      }
+
       function distributeDarkGan(doors, diPan) {
         const result = { 1: "", 2: "", 3: "", 4: "", 5: "", 6: "", 7: "", 8: "", 9: "" };
 
@@ -1092,17 +1509,7 @@
       }
 
       function shortGod(god) {
-        const map = {
-          值符: "符",
-          腾蛇: "蛇",
-          太阴: "阴",
-          六合: "合",
-          白虎: "虎",
-          玄武: "玄",
-          九地: "地",
-          九天: "天",
-        };
-        return map[god] || "";
+        return god || "";
       }
 
       function shortDoor(door) {
@@ -1168,11 +1575,11 @@
       }
 
       function getStemStateBranch(stem, gong, kind, data) {
-        if (kind === "earth" && gong === "2") {
+        if (kind === "earth" && palaceYinYangBranch[gong]) {
           return yinYangBranchByStem(gong, firstStem(data.tianPan[gong]));
         }
 
-        if (kind === "heaven" && data.stars[gong] === "天芮" && palaceYinYangBranch[gong]) {
+        if (kind === "heaven" && palaceYinYangBranch[gong]) {
           return yinYangBranchByStem(gong, firstStem(data.diPan[gong]));
         }
 
@@ -1254,6 +1661,7 @@
         const solar = window.Solar.fromYmdHms(year, month, day, hour, minute, 0);
         const lunar = solar.getLunar();
         const prevJieQi = lunar.getPrevJieQi(false);
+        const nextJieQi = typeof lunar.getNextJieQi === "function" ? lunar.getNextJieQi(false) : null;
         if (!prevJieQi) throw new Error("没有找到当前时间之前的节气。");
 
         const jieQiName = prevJieQi.getName();
@@ -1272,6 +1680,7 @@
         const timeXun = lunar.getTimeXun();
         const timeStem = lunar.getTimeGan();
         const timeBranch = lunar.getTimeZhi();
+        const dayStem = lunar.getDayGan();
         const monthBranch = lunar.getMonthZhi();
         const kongWang = getKongWang(timeXun);
         const maXing = getMaXing(timeBranch);
@@ -1291,8 +1700,11 @@
           dun: table.dun,
           ju,
           yuan: yuanNames[yuanIndex],
+          inputTime: formatInputDateTime(value),
           jieQiName,
           jieQiTime: formatDateTime(startDate),
+          nextJieQiName: nextJieQi?.getName?.() || "",
+          nextJieQiTime: nextJieQi ? formatDateTime(solarToDate(nextJieQi.getSolar())) : "",
           dayNumber: daysFromJieQi + 1,
           fuTou: yuanInfo.fuTou,
           siZhu: {
@@ -1305,6 +1717,7 @@
           timeXun,
           timeStem,
           timeBranch,
+          dayStem,
           monthBranch,
           kongWang,
           maXing,
@@ -1344,7 +1757,7 @@
                   const earthStemClass = gong === "2" ? "stem-earth stem-horizontal" : "stem-earth";
 
                   return `
-                    <div class="qimen-palace">
+                    <div class="qimen-palace" data-gong="${gong}" role="button" tabindex="0" title="点击查看克应">
                       <span class="dark-stem">${escapeHtml(data.darkGan[gong] || "")}</span>
                       <span class="god">${escapeHtml(shortGod(data.gods[gong]))}</span>
                       <span class="star">${renderStarText(data.stars[gong])}</span>
@@ -1366,20 +1779,50 @@
         `;
       }
 
+      function renderPalaceKeying(data, gong) {
+        return `
+          <h3>${escapeHtml(palaceNames[gong])}：${escapeHtml(palaceKeyingNumbers[gong] || "")}</h3>
+          <div class="keying-section">
+            <strong>天干克应</strong>
+            ${renderGanKeying(data, gong)}
+          </div>
+          <div class="keying-section">
+            <strong>八门克应</strong>
+            ${renderBaMenKeying(data, gong)}
+          </div>
+        `;
+      }
+
+      function bindQimenPalaceClicks(data) {
+        const panel = document.querySelector("#palaceKeying");
+        document.querySelectorAll(".qimen-palace[data-gong]").forEach((palace) => {
+          const show = () => {
+            document.querySelectorAll(".qimen-palace.selected").forEach((item) => item.classList.remove("selected"));
+            palace.classList.add("selected");
+            panel.innerHTML = renderPalaceKeying(data, palace.dataset.gong);
+          };
+          palace.addEventListener("click", show);
+          palace.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              show();
+            }
+          });
+        });
+      }
+
       function renderQimen() {
         try {
           const data = calculateQimen(qimenDateTime.value);
           qimenResult.innerHTML = `
-            <strong>${escapeHtml(data.dun)}${data.ju}局 · ${escapeHtml(data.yuan)}</strong>
-            <div>排法：拆补法定局；九星、八门顺排；天盘干、地盘干、八神按阳顺阴逆</div>
-            <div>当前节气：${escapeHtml(data.jieQiName)}</div>
-            <div>节气时间：${escapeHtml(data.jieQiTime)}</div>
-            <div>距节气：第 ${data.dayNumber} 天；符头：${escapeHtml(data.fuTou)}</div>
-            <div>四柱：${escapeHtml(data.siZhu.year)} ${escapeHtml(data.siZhu.month)} ${escapeHtml(data.siZhu.day)} ${escapeHtml(data.siZhu.time)}</div>
-            <div>旬首：${escapeHtml(data.timeXun)} · 旬首六仪：${escapeHtml(data.xunShou)} · 值符：${escapeHtml(data.zhiFuXing)} · 值使：${escapeHtml(data.zhiShiMen)}</div>
+            <strong class="qimen-title">${escapeHtml(data.dun)}${data.ju}局 · ${escapeHtml(data.yuan)}</strong>
+            ${renderQimenSummary(data)}
             ${renderQimenBoard(data)}
-            <div>旬首：${escapeHtml(data.timeXun)}${escapeHtml(data.xunShou)}　空亡：${escapeHtml(data.kongWang)}　马星：${escapeHtml(data.maXing)}</div>
+            <div class="qimen-footnote">旬首：${escapeHtml(data.timeXun)}${escapeHtml(data.xunShou)}　空亡：${escapeHtml(data.kongWang)}　马星：${escapeHtml(data.maXing)}</div>
+            ${renderSpecialPattern(data)}
+            <div id="palaceKeying" class="keying-panel">点击任一宫，查看此宫的天干克应、八门克应。</div>
           `;
+          bindQimenPalaceClicks(data);
         } catch (error) {
           qimenResult.innerHTML = `<div class="error">${escapeHtml(error.message)}</div>`;
         }
